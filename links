@@ -95,6 +95,12 @@ EOF
           
           
           
+Using the ArgoCD  Sync and Wait Task
+https://github.com/tektoncd/catalog/blob/master/argocd/argocd.yaml
+          
+          
+          
+          
           
           
           

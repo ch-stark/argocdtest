@@ -1,0 +1,28 @@
+openssl s_client -connect ldap.corp.server.com:636  2>/dev/null </dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > certificate
+ 
+oc create configmap ca-config-map --from-file=ca.crt=certificate -n openshift-config
+ 
+[cstark@cstark crc_libvirt_4.2.0]$ cat ldap 
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+ name: cluster
+spec:
+ identityProviders:
+ - name: ldapidp
+   mappingMethod: claim
+   type: LDAP
+   ldap:
+     attributes:
+       id:
+       - dn
+       email:
+       - mail
+       name:
+       - cn
+       preferredUsername:
+       - uid
+     ca: 
+        name: ca-config-map
+     insecure: false
+     url: "ldap://ldap.corp.server.com/ou=users,dc=company,dc=com?uid"

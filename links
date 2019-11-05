@@ -6,6 +6,11 @@ https://github.com/redhat-cop/quay-operator#deploy-a-quay-ecosystem
 https://operatorhub.io/operator/noobaa-operator
 
 
+operator-sdk build quay.io/cstark/argocd-operator:latest
+docker login quay.io
+docker push quay.io/cstark/argocd-operator:latest
+
+
 
 https://github.com/tektoncd/catalog/tree/master/argocd
 

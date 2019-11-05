@@ -4,3 +4,107 @@ https://github.com/redhat-cop/quay-operator
 https://github.com/redhat-cop/quay-operator#deploy-the-operator
 https://github.com/redhat-cop/quay-operator#deploy-a-quay-ecosystem
 https://operatorhub.io/operator/noobaa-operator
+
+
+
+https://github.com/tektoncd/catalog/tree/master/argocd
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-env-configmap
+data:
+  ARGOCD_SERVER: <Argo CD server address>
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-env-secret
+data:
+  # choose one of username/password or auth token
+  ARGOCD_USERNAME: <username>
+  ARGOCD_PASSWORD: <password>
+  ARGOCD_AUTH_TOKEN: <token>
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: argocd-pipeline
+spec:
+  tasks:
+    - name: push-to-git
+      taskRef:
+        name: some-git-task # pushes to the Git repository used by the application in the next task
+    - name: sync-application
+      taskRef:
+        name: argocd-task-sync-and-wait
+      params:
+        - name: application-name
+          value: some-application
+        - name: flags
+          value: --insecure # needed in this example only because the Argo CD server is locally hosted
+          
+          
+Another example:
+
+https://github.com/rbo/openshift-pipelines-examples
+          
+          
+oc new-project pipeline-demo
+
+# Need to run buildah, will be fixed.
+oc adm policy add-scc-to-user privileged -z pipeline
+# Need to deploy in own namespace.
+oc adm policy add-role-to-user edit -z pipeline
+# Need to run the mvn build
+oc adm policy add-scc-to-user anyuid -z pipeline
+
+# create pipline tasks
+oc create -f https://raw.githubusercontent.com/tektoncd/catalog/master/buildah/buildah.yaml
+oc create -f https://raw.githubusercontent.com/tektoncd/catalog/master/openshift-client/openshift-client-task.yaml
+oc create -f tasks/
+
+# create input resource (git repo)
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: mapit-git
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com/siamaksade/mapit-spring.git
+EOF
+
+# create output resource (image registry)
+oc create -f - <<EOF
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: mapit-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: image-registry.openshift-image-registry.svc:5000/$(oc project --short)/mapit-spring:latest
+EOF
+
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
